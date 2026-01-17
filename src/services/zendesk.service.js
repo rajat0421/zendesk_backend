@@ -11,8 +11,20 @@ async function getUsers() {
 }
 
 async function getOrganizations() {
-  const res = await zendesk.get("/organizations");
-  return res.data;
+  let allOrganizations = [];
+  let nextPage = "/organizations";
+
+  while (nextPage) {
+    const res = await zendesk.get(nextPage);
+
+    allOrganizations.push(...res.data.organizations);
+
+    nextPage = res.data.next_page
+      ? res.data.next_page.replace(`https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`, "")
+      : null;
+  }
+
+  return allOrganizations;
 }
 module.exports = {
   getTicketsCount,
